@@ -5,14 +5,14 @@ Sslcheck allows you to check ssl keys with or without DNS resolution. The compan
 have different ssl keys.  So if you've got two, four or more servers that sit behind a load balancer, it makes it hard
 to inspect the keys on each server individually as the load balancer is where the DNS name for that SSL key resides.
 
-Sslcheck takes two parameters -i <ip address> -p <port> -d <dns name>.  The -i is optional, and if it's passed sslcheck will not
-perform any dns lookups, while the -d is manditory. The -p is for servers that might be running on a port other than 443.
+Sslcheck takes two parameters -ip <ip address> -port <port> -domain <dns name>.  The -ip is optional, and if it's passed sslcheck will not
+perform any dns lookups, while the -domain is manditory. The -port is for servers that might be running on a port other than 443.
 
 Sslcheck is written in Go and should compile without the need of additional packages.
 <h1>Example:</h1>
 <h2>IPv4</h2>
 <pre>
-  ] $ ./sslcheck -d www.google.com
+  ] $ ./sslcheck -domain www.google.com
   Client connected to: 74.125.137.99:443
   Cert Checks OK
   Server key information:
@@ -34,7 +34,7 @@ Sslcheck is written in Go and should compile without the need of additional pack
 </pre>
 <h2>IPv6<h2>
 <pre>
-  ] $ ./sslcheck -d www.google.com
+  ] $ ./sslcheck -domain www.google.com
 Client connected to: [2607:f8b0:4002:801::1001]:443
 Cert Checks OK
 Server key information:
