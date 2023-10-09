@@ -21,6 +21,7 @@ type CLIArgs struct {
 	Port       string
 	Help       bool
 	LogLevel   logmodule.LogLevel
+	IsServer   bool
 }
 
 func parseCLIArgs() CLIArgs {
@@ -31,7 +32,8 @@ func parseCLIArgs() CLIArgs {
 	flag.StringVar(&args.DomainName, "domain", "", "Domain Name")
 	flag.StringVar(&args.Port, "port", "443", "Port Number")
 	flag.BoolVar(&args.Help, "help", false, "Help")
-	flag.StringVar(&logLevelString, "loglevel", "error", "Log level (debug, info, error, critical)")
+	flag.StringVar(&logLevelString, "loglevel", "error", "Log level (debug, info, warning, error, critical)")
+	flag.BoolVar(&args.IsServer, "serv", false, "Run as HTTP service")
 
 	flag.Parse()
 
@@ -40,6 +42,10 @@ func parseCLIArgs() CLIArgs {
 		args.LogLevel = logmodule.DEBUG
 	case "info":
 		args.LogLevel = logmodule.INFO
+	case "warn":
+		args.LogLevel = logmodule.WARNING
+	case "warning":
+		args.LogLevel = logmodule.WARNING
 	case "error":
 		args.LogLevel = logmodule.ERROR
 	case "critical":
@@ -95,6 +101,11 @@ func main() {
 	if args.Help {
 		Usage()
 		os.Exit(0)
+	}
+
+	if args.IsServer {
+		StartServer()
+		return
 	}
 
 	checkSSL(args)
