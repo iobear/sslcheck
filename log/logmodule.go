@@ -11,6 +11,7 @@ type LogLevel int
 const (
 	DEBUG LogLevel = iota
 	INFO
+	WARNING
 	ERROR
 	CRITICAL
 )
@@ -32,6 +33,12 @@ func (l *Logger) Debug(format string, v ...interface{}) {
 func (l *Logger) Info(format string, v ...interface{}) {
 	if l.level <= INFO {
 		log.Output(2, "[INFO] "+fmt.Sprintf(format, v...))
+	}
+}
+
+func (l *Logger) Warning(format string, v ...interface{}) {
+	if l.level <= WARNING {
+		log.Output(2, "[WARN] "+fmt.Sprintf(format, v...))
 	}
 }
 

@@ -128,6 +128,21 @@ func CertDetails(conn *tls.Conn) []SSLDetail {
 	return details
 }
 
+func CheckCertificateValidity(conn *tls.Conn, days int) bool {
+	state := conn.ConnectionState()
+
+	now := time.Now()
+	for _, cert := range state.PeerCertificates {
+		if now.After(cert.NotBefore) && now.AddDate(0, 0, days).Before(cert.NotAfter) {
+			continue
+		} else {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (s *SSLChecker) CheckSSL(info SSLInfo) (CertInfo, error) {
 	var result CertInfo
 
@@ -142,6 +157,11 @@ func (s *SSLChecker) CheckSSL(info SSLInfo) (CertInfo, error) {
 		return result, err
 	}
 	defer conn.Close()
+
+	isValidForDays := CheckCertificateValidity(conn, 10)
+	if !isValidForDays {
+		return result, fmt.Errorf("certificate(s) not valid for at least 10 days")
+	}
 
 	result.Details = CertDetails(conn)
 

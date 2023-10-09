@@ -31,7 +31,7 @@ func parseCLIArgs() CLIArgs {
 	flag.StringVar(&args.DomainName, "domain", "", "Domain Name")
 	flag.StringVar(&args.Port, "port", "443", "Port Number")
 	flag.BoolVar(&args.Help, "help", false, "Help")
-	flag.StringVar(&logLevelString, "loglevel", "info", "Log level (debug, info, error, critical)")
+	flag.StringVar(&logLevelString, "loglevel", "error", "Log level (debug, info, error, critical)")
 
 	flag.Parse()
 
