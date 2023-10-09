@@ -16,13 +16,18 @@ type SSLInfo struct {
 	Port       string
 }
 
+type SSLDetail struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 type SSLChecker struct {
 	Logger *logmodule.Logger
 }
 
 type CertInfo struct {
 	IsValid bool
-	Details string // This could be a struct with specific fields, but for simplicity, I'm using a string
+	Details []SSLDetail
 }
 
 func ParseInput(info SSLInfo) (string, string, error) {
@@ -70,37 +75,57 @@ func ConnectToServer(target string, domainName string) (*tls.Conn, error) {
 	return conn, nil
 }
 
-func CertDetails(conn *tls.Conn) {
+func CertDetails(conn *tls.Conn) []SSLDetail {
 	state := conn.ConnectionState()
-	for i, v := range state.PeerCertificates {
-		switch i {
-		case 0:
-			fmt.Printf("Server key information:")
-			switch v.Version {
-			case 3:
-				fmt.Printf("\tVersion: TLS v1.2\n")
-			case 2:
-				fmt.Printf("\tVersion: TLS v1.1\n")
-			case 1:
-				fmt.Printf("\tVersion: TLS v1.0\n")
-			case 0:
-				fmt.Printf("\tVersion: SSL v3\n")
-			}
-			fmt.Printf("\tCN:\t %v\n\tOU:\t %v\n\tOrg:\t %v\n", v.Subject.CommonName, v.Subject.OrganizationalUnit, v.Subject.Organization)
-			fmt.Printf("\tCity:\t %v\n\tState:\t %v\n\tCountry: %v\n", v.Subject.Locality, v.Subject.Province, v.Subject.Country)
-			fmt.Printf("SSL Certificate Valid:\n\tFrom:\t %v\n\tTo:\t %v\n", v.NotBefore, v.NotAfter)
-			fmt.Printf("Valid Certificate DNS:\n")
-			if len(v.DNSNames) >= 1 {
-				for dns := range v.DNSNames {
-					fmt.Printf("\t%v\n", v.DNSNames[dns])
-				}
-			} else {
-				fmt.Printf("\t%v\n", v.Subject.CommonName)
-			}
+
+	var details []SSLDetail
+
+	for _, v := range state.PeerCertificates {
+		switch v.Version {
+		case 3:
+			details = append(details, SSLDetail{"Version", "TLS v1.2"})
+		case 2:
+			details = append(details, SSLDetail{"Version", "TLS v1.1"})
 		case 1:
-			fmt.Printf("Issued by:\n\t%v\n\t%v\n\t%v\n", v.Subject.CommonName, v.Subject.OrganizationalUnit, v.Subject.Organization)
+			details = append(details, SSLDetail{"Version", "TLS v1.0"})
+		case 0:
+			details = append(details, SSLDetail{"Version", "SSL v3"})
+		}
+
+		// Adding individual fields, which avoids making assumptions about their presence
+		if v.Subject.CommonName != "" {
+			details = append(details, SSLDetail{"CN", v.Subject.CommonName})
+		}
+
+		for _, ou := range v.Subject.OrganizationalUnit {
+			details = append(details, SSLDetail{"OU", ou})
+		}
+
+		for _, org := range v.Subject.Organization {
+			details = append(details, SSLDetail{"Org", org})
+		}
+
+		for _, loc := range v.Subject.Locality {
+			details = append(details, SSLDetail{"City", loc})
+		}
+
+		for _, prov := range v.Subject.Province {
+			details = append(details, SSLDetail{"State", prov})
+		}
+
+		for _, country := range v.Subject.Country {
+			details = append(details, SSLDetail{"Country", country})
+		}
+
+		details = append(details, SSLDetail{"Valid From", v.NotBefore.String()})
+		details = append(details, SSLDetail{"Valid To", v.NotAfter.String()})
+
+		for _, dnsName := range v.DNSNames {
+			details = append(details, SSLDetail{"DNS Name", dnsName})
 		}
 	}
+
+	return details
 }
 
 func (s *SSLChecker) CheckSSL(info SSLInfo) (CertInfo, error) {
@@ -118,7 +143,7 @@ func (s *SSLChecker) CheckSSL(info SSLInfo) (CertInfo, error) {
 	}
 	defer conn.Close()
 
-	CertDetails(conn)
+	result.Details = CertDetails(conn)
 
 	return result, nil
 }
