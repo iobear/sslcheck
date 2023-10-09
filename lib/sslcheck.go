@@ -159,11 +159,13 @@ func (s *SSLChecker) CheckSSL(info SSLInfo) (CertInfo, error) {
 	defer conn.Close()
 
 	isValidForDays := CheckCertificateValidity(conn, 10)
+
+	result.IsValid = isValidForDays
+	result.Details = CertDetails(conn)
+
 	if !isValidForDays {
 		return result, fmt.Errorf("certificate(s) not valid for at least 10 days")
 	}
-
-	result.Details = CertDetails(conn)
 
 	return result, nil
 }
