@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	serv "github.com/iobear/sslcheck/http"
 	sslcheck "github.com/iobear/sslcheck/lib"
 	logmodule "github.com/iobear/sslcheck/log"
 )
@@ -33,7 +34,7 @@ func parseCLIArgs() CLIArgs {
 	flag.StringVar(&args.Port, "port", "443", "Port Number")
 	flag.BoolVar(&args.Help, "help", false, "Help")
 	flag.StringVar(&logLevelString, "loglevel", "error", "Log level (debug, info, warning, error, critical)")
-	flag.BoolVar(&args.IsServer, "serv", false, "Run as HTTP service")
+	flag.BoolVar(&args.IsServer, "serv", true, "Run as HTTP service")
 
 	flag.Parse()
 
@@ -104,7 +105,7 @@ func main() {
 	}
 
 	if args.IsServer {
-		StartServer()
+		serv.StartServer()
 		return
 	}
 
