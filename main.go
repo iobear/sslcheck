@@ -34,7 +34,7 @@ func parseCLIArgs() CLIArgs {
 	flag.StringVar(&args.Port, "port", "443", "Port Number")
 	flag.BoolVar(&args.Help, "help", false, "Help")
 	flag.StringVar(&logLevelString, "loglevel", "error", "Log level (debug, info, warning, error, critical)")
-	flag.BoolVar(&args.IsServer, "serv", true, "Run as HTTP service")
+	flag.BoolVar(&args.IsServer, "serv", false, "Run as HTTP service")
 
 	flag.Parse()
 
@@ -57,6 +57,8 @@ func parseCLIArgs() CLIArgs {
 
 	if args.DomainName == "" && len(flag.Args()) > 0 {
 		args.DomainName = flag.Args()[0]
+	} else if args.DomainName == "" && len(flag.Args()) == 0 {
+		args.IsServer = true
 	}
 
 	return args
